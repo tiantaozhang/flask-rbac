@@ -1,7 +1,7 @@
 Flask.ext.rbac.RBAC
 --------------
 
-.. autoclass:: flask_rbac.__init__.RBAC
+.. autoclass:: flask_prbac.__init__.RBAC
    :members:
    :inherited-members:
 
@@ -9,7 +9,7 @@ Flask.ext.rbac.RBAC
 Flask.ext.rbac.model.RoleMixin
 ------------------------------
 
-.. autoclass:: flask_rbac.model.RoleMixin
+.. autoclass:: flask_prbac.model.RoleMixin
    :members:
    :inherited-members:
 
@@ -17,6 +17,6 @@ Flask.ext.rbac.model.RoleMixin
 Flask.ext.rbac.model.UserMixin
 ------------------------------
 
-.. autoclass:: flask_rbac.model.UserMixin
+.. autoclass:: flask_prbac.model.UserMixin
    :members:
    :inherited-members:

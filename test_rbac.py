@@ -3,7 +3,7 @@ import unittest
 from flask import Flask, Response, make_response
 from flask.ext.login import current_user as login_user
 
-from flask_rbac import RBAC, UserMixin, RoleMixin
+from flask_prbac import RBAC, UserMixin, RoleMixin
 
 
 class Role(RoleMixin):

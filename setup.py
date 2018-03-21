@@ -9,7 +9,7 @@ with open(join(CURRENT_DIR, "README.rst")) as long_description_file:
 
 setup(
     name="Flask-PRBAC",
-    version="0.1.0",
+    version="0.1.2",
     url="https://github.com/tiantaozhang/flask-rbac",
     author="tiantao zhang",
     author_email="tatumnzhang@gmail.com",
