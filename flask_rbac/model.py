@@ -99,5 +99,8 @@ class UserMixin(object):
         for role in self.roles:
             yield role
 
+    def get_permissions(self):
+        return []
+
 
 anonymous = RoleMixin('anonymous')

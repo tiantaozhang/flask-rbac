@@ -14,6 +14,9 @@ class User(UserMixin):
     def __repr__(self):
         return '<User %s>' % self.roles
 
+    def get_permissions(self):
+        return ['index']
+
 everyone = Role('everyone')
 logged_role = Role('logged_role')
 staff_role = Role('staff_role')
@@ -103,6 +106,63 @@ def makeapp(with_factory=False, use_white=False):
     return app
 
 
+def makeapp2(with_factory=False, use_white=False):
+    global current_user
+    app = Flask(__name__)
+    app.debug = True
+
+    if use_white:
+        app.config['RBAC_USE_WHITE'] = True
+    else:
+        app.config['RBAC_USE_WHITE'] = False
+
+    if with_factory:
+        rbac = RBAC()
+        rbac.init_app(app)
+    else:
+        rbac = RBAC(app)
+
+    rbac.set_user_permission(True)
+    rbac.set_user_loader(lambda: current_user)
+    # rbac.set_user_model(User)
+    # rbac.set_role_model(Role)
+
+    @app.route('/')
+    @rbac.allow(roles=['everyone'], methods=['GET'])
+    def index():
+        return Response('index')
+
+    @app.route('/b', methods=['GET', 'POST'])
+    @rbac.allow(roles=['logged_role'], methods=['GET'])
+    @rbac.allow(roles=['staff_role', 'special'], methods=['POST'])
+    def b():
+        return Response('Hello from /b')
+
+    return app
+
+
+class UseApp2UnitTests(unittest.TestCase):
+    def setUp(self):
+        self.app = makeapp2(use_white=True)
+        self.client = self.app.test_client()
+        self.rbac = self.app.extensions['rbac'].rbac
+
+    def test_allow_get_view(self):
+        global current_user
+        current_user = anonymous
+        print(self.client.open('/').data)
+        self.assertEqual(self.client.open('/').data, 'index')
+
+        print('test_allow_get_view')
+        current_user = normal_user
+        self.assertEqual(self.client.open('/').data, 'index')
+        self.assertNotEqual(self.client.open('/b').data, 'Hello from /b')
+
+        current_user = staff_role_user
+        self.assertEqual(self.client.open('/').data, 'index')
+        self.assertNotEqual(self.client.open('/b').data, 'Hello from /b')
+
+
 class UseWhiteApplicationUnitTests(unittest.TestCase):
 
     def setUp(self):
@@ -123,6 +183,7 @@ class UseWhiteApplicationUnitTests(unittest.TestCase):
         current_user = anonymous
         self.assertEqual(self.client.open('/').data, 'index')
 
+        print('test_allow_get_view')
         current_user = normal_user
         self.assertEqual(self.client.open('/').data, 'index')
         self.assertEqual(self.client.open('/b').data, 'Hello from /b')

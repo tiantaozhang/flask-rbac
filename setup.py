@@ -8,11 +8,11 @@ with open(join(CURRENT_DIR, "README.rst")) as long_description_file:
 
 
 setup(
-    name="Flask-RBAC",
-    version="0.3.0",
-    url="https://github.com/shonenada/flask-rbac",
-    author="Yaoda Liu",
-    author_email="shonenada@gmail.com",
+    name="Flask-PRBAC",
+    version="0.1.0",
+    url="https://github.com/tiantaozhang/flask-rbac",
+    author="tiantao zhang",
+    author_email="tatumnzhang@gmail.com",
     description="RBAC support for Flask",
     long_description=long_description,
     zip_safe=False,

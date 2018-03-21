@@ -152,6 +152,9 @@ class RBAC(object):
         self._user_model = kwargs.get('user_model', UserMixin)
         self._user_loader = kwargs.get('user_loader', lambda: current_user)
         self.permission_failed_hook = kwargs.get('permission_failed_hook')
+        # user permission, not role permission
+        # if is_user_permission is True, use user permission
+        self._is_user_permission = kwargs.get('user_permission', False)
 
         if app is not None:
             self.app = app
@@ -194,6 +197,10 @@ class RBAC(object):
         """
         self._user_model = model_cls
         return model_cls
+
+    def set_user_permission(self, is_user_permission):
+        self._is_user_permission = is_user_permission
+        return is_user_permission
 
     def set_role_model(self, model):
         """Set custom model of role.
@@ -383,12 +390,20 @@ class RBAC(object):
 
         method = request.method
 
-        if not hasattr(current_user, 'get_roles'):
-            roles = [anonymous]
-        else:
-            roles = current_user.get_roles()
+        if not self._is_user_permission:
+            if not hasattr(current_user, 'get_roles'):
+                roles = [anonymous]
+            else:
+                roles = current_user.get_roles()
 
-        permit = self._check_permission(roles, method, resource)
+            permit = self._check_permission(roles, method, resource)
+        else:   # permission
+            if not hasattr(current_user, 'get_permissions'):
+                permissions = None
+            else:
+                permissions = current_user.get_permissions()
+
+            permit = self._check_permission2(permissions, endpoint)
 
         if not permit:
             return self._deny_hook()
@@ -423,6 +438,23 @@ class RBAC(object):
             permit = (is_allowed is not False)
 
         return permit
+
+    def _check_permission2(self, permissions, resource, method=None):
+        if self.acl.is_exempt(resource):
+            return True
+
+        is_allowed = False  # 暂不考虑deny
+
+        if resource in permissions:
+            is_allowed = True
+
+        if self.use_white:
+            permit = (is_allowed is True)
+        else:       # deny的情况
+            permit = (is_allowed is not False)
+
+        return permit
+
 
     def _deny_hook(self):
         if self.permission_failed_hook:
