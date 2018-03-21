@@ -399,7 +399,7 @@ class RBAC(object):
             permit = self._check_permission(roles, method, resource)
         else:   # permission
             if not hasattr(current_user, 'get_permissions'):
-                permissions = None
+                permissions = []
             else:
                 permissions = current_user.get_permissions()
 
@@ -439,19 +439,21 @@ class RBAC(object):
 
         return permit
 
-    def _check_permission2(self, permissions, resource, method=None):
+    def _check_permission2(self, permissions, endpoint, method=None):
+        app = self.get_app()
+        resource = app.view_functions.get(endpoint, None)
         if self.acl.is_exempt(resource):
             return True
 
         is_allowed = False  # 暂不考虑deny
 
-        if resource in permissions:
+        if endpoint in permissions:
             is_allowed = True
 
         if self.use_white:
             permit = (is_allowed is True)
         else:       # deny的情况
-            permit = (is_allowed is not False)
+            permit = True
 
         return permit
 
@@ -469,6 +471,7 @@ class RBAC(object):
                 role = anonymous
             else:
                 role = self._role_model.get_by_name(rn)
+
             self.acl.allow(role, method, resource, with_children)
         for rn, method, resource, with_children in self.before_acl['deny']:
             role = self._role_model.get_by_name(rn)
